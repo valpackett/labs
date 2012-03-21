@@ -9,3 +9,10 @@ if os.environ.has_key('REDISTOGO_URL'):
             password=url.password)
 else:
     REDIS = redis.Redis()
+
+deps = map(lambda d: d.split('==')[0],
+        open('../requirements.txt').read().split('\n')[:-1])
+
+def add_deps(request):
+    request.deps = deps
+    return request

@@ -24,6 +24,8 @@ textarea { overflow: auto; vertical-align: top; }
 table { border-collapse: collapse; border-spacing: 0; }
 
 /* style */
+::-moz-selection { background: #cc0000; color: #fff; text-shadow: none; }
+::selection { background: #cc0000; color: #fff; text-shadow: none; }
 a { color: #3465a4 }
 body {
   background: #e9b96e;
@@ -52,8 +54,14 @@ button {
   text-shadow: #3465a4 0 1px 0;
   padding: 3px 6px;
 }
+footer {
+  color: #555753;
+  font-size: smaller;
+  margin-top: 2em;
+}
 @media screen and (min-width:800px) {
-  body {
-    width: 80%;
-  }
+  body { width: 80% }
+}
+@media screen and (min-width:1500px) {
+  body { width: 70% }
 }
