@@ -1,0 +1,35 @@
+deps = map(lambda d: d.split('==')[0],
+        open('../requirements.txt').read().split('\n')[:-1])
+
+
+{% extends "layout.html" %}
+
+{% block title %}hello{% end %}
+
+{% block content %}
+  <article>
+    <p>
+      Hi there. Feel free to try these cool experiments:
+      <ul>
+        <li><a href="/musiclyrics/">Music lyrics graph visualization</a></li>
+      </ul>
+    </p>
+    <p>
+      By <a href="http://floatboth.com" rel="author">Greg V</a>
+    </p>
+    <p>
+      Using <a href="http://python.org">Python</a> packages:
+      {% for dep in deps %}
+        <a href="http://pypi.python.org/pypi/{{ dep }}">{{ dep }}</a>
+      {% end %}
+    </p>
+    <p>
+      Using JavaScript libraries:
+        <a href="http://mbostock.github.com/d3/">D3.js</a>
+        <a href="http://leaverou.github.com/prefixfree/">-prefix-free</a>
+        <a href="http://modernizr.com">modernizr</a>
+        <a href="https://github.com/fgnass/spin.js">spin.js</a>
+        <a href="https://github.com/ded/domready">domready</a>
+    </p>
+  </article>
+{% end %}

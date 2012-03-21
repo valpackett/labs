@@ -1,0 +1,66 @@
+from bs4 import BeautifulSoup
+from networkx.readwrite import json_graph
+import networkx as nx
+import feedparser
+import requests
+import redis
+import nltk
+
+nltk.download('maxent_treebank_pos_tagger')
+min_word = 2
+
+username = request.path['user']
+red = redis.Redis()
+feed = feedparser.parse('http://ws.audioscrobbler.com/2.0/user/%s/lovedtracks.rss'
+        % username)
+graph = nx.Graph()
+
+def slug(s):
+    return s.lower().replace(' ', '').replace("'", '').replace('.', '')
+
+def fetch(artist, track):
+    artist, track = (slug(artist.replace('The ', '')), slug(track))
+    cache_key = artist+track
+    text = red.get(cache_key)
+    if not text:
+        r = requests.get('http://www.azlyrics.com/lyrics/%s/%s.html' %
+                (artist, track))
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text)
+            fc = soup.find(text=' start of lyrics ')
+            lyrics = fc.parent
+            fc.extract()
+            lyrics.find(text=' end of lyrics ').extract()
+            text = lyrics.get_text()
+            red.set(cache_key, text)
+            red.expire(cache_key, 60*60*12) # most popular will remain cached
+            return text
+        else:
+            return False
+    return text
+
+for entry in feed['entries'][:7]:
+    (artist, track) = entry['title'].split(u' \u2013 ')
+    text = fetch(artist, track)
+    if text:
+        words = nltk.pos_tag(nltk.word_tokenize(text))
+        words = [(word, nltk.tag.simplify.simplify_wsj_tag(tag)) for word, tag in words]
+        for wordn in xrange(len(words)):
+            (word, pos) = words[wordn]
+            word = slug(word)
+            if len(word) > min_word:
+                if word in graph.node:
+                    graph.node[word]['freq'] += 1
+                else:
+                    graph.add_node(word, freq=1, pos=pos)
+                if wordn != 0:
+                    prev_word = slug(words[wordn - 1][0])
+                    if len(prev_word) > min_word:
+                        graph.add_edge(prev_word, word)
+
+for node in graph.nodes(data=True):
+    (text, attrs) = node
+    if attrs['freq'] < 2:
+        graph.remove_node(text)
+
+response.body = json_graph.dumps(graph)

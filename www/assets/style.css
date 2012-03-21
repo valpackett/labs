@@ -1,0 +1,59 @@
+/* http://github.com/necolas/normalize.css */
+article, aside, details, figcaption, figure, footer, header, hgroup, nav, section, summary { display: block }
+html { font-size: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+html, button, input, select, textarea { font-family: sans-serif }
+body { margin: 0 }
+a:focus { outline: thin dotted }
+a:hover, a:active { outline: 0 }
+abbr[title] { border-bottom: 1px dotted }
+b, strong { font-weight: bold }
+p, pre { margin: 1em 0 }
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+sup { top: -0.5em }
+sub { bottom: -0.25em }
+small { font-size: 75% }
+menu, ol, ul { padding: 0 0 0 40px }
+img { border: 0; -ms-interpolation-mode: bicubic; }
+form { margin: 0 }
+button, input, select, textarea { font-size: 100%; margin: 0; vertical-align: baseline; *vertical-align: middle; }
+button, input { line-height: normal }
+button, input[type="button"], input[type="reset"], input[type="submit"] { cursor: pointer; -webkit-appearance: button; *overflow: visible; }
+button[disabled], input[disabled] { cursor: default }
+button::-moz-focus-inner, input::-moz-focus-inner { border: 0; padding: 0; }
+textarea { overflow: auto; vertical-align: top; }
+table { border-collapse: collapse; border-spacing: 0; }
+
+/* style */
+a { color: #3465a4 }
+body {
+  background: #e9b96e;
+  margin: 0 auto;
+  width: 95%;
+}
+#content {
+  padding: 1em;
+  background: #eeeeec;
+  border-radius: 3px;
+}
+#graph {
+  margin: 2em 0 0 1em;
+  background: #ffffff;
+  border-radius: 3px;
+  box-shadow: #d3d7cf 0 0 6px;
+}
+input, button, textarea {
+  border-radius: 3px;
+  border: 1px solid #204a87;
+  padding: 3px;
+}
+button {
+  background: linear-gradient(top, #729fcf, #3465a4);
+  color: white;
+  text-shadow: #3465a4 0 1px 0;
+  padding: 3px 6px;
+}
+@media screen and (min-width:800px) {
+  body {
+    width: 80%;
+  }
+}

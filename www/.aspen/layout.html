@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8'>
+    <title>{% block title %}{% end %} / .labs { float: both }</title>
+    <link rel='stylesheet' type='text/css' href='/assets/style.css'>
+    <script src="/assets/prefixfree.min.js"></script>
+    {% block head %}{% end %}{% block headl %}{% end %}
+  </head>
+  <body>
+    <header>
+      <h1><a href="/">.labs { float: both }</a></h1>
+    </header>
+    <section role="main" id="content">
+      {% block content %}
+      {% end %}
+    </section>
+    <script>
+      var _gauges=_gauges||[];(function(){var a=document.createElement("script");a.type="text/javascript",a.async=!0,a.id="gauges-tracker",a.setAttribute("data-site-id","4f69d841f5a1f5359700005e"),a.src="//secure.gaug.es/track.js";var b=document.getElementsByTagName("script")[0];b.parentNode.insertBefore(a,b)})();
+    </script>
+  </body>
+</html>

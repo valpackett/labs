@@ -1,0 +1,14 @@
+PyYAML==3.10
+aspen==0.13.11
+beautifulsoup4==4.0.1
+certifi==0.0.8
+chardet==1.0.1
+distribute==0.6.24
+feedparser==5.1
+gevent==0.13.6
+greenlet==0.3.4
+lxml==2.3.3
+networkx==1.6
+nltk==2.0.1rc4
+requests==0.10.8
+wsgiref==0.1.2
