@@ -1,16 +1,16 @@
 from bs4 import BeautifulSoup
+from config import REDIS as red
 from networkx.readwrite import json_graph
 import networkx as nx
 import feedparser
 import requests
-import redis
+import config
 import nltk
 
 nltk.download('maxent_treebank_pos_tagger')
 min_word = 2
 
 username = request.path['user']
-red = redis.Redis()
 feed = feedparser.parse('http://ws.audioscrobbler.com/2.0/user/%s/lovedtracks.rss'
         % username)
 graph = nx.Graph()
