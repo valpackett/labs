@@ -42,6 +42,7 @@ body {
   background: #ffffff;
   border-radius: 3px;
   box-shadow: #d3d7cf 0 0 6px;
+  user-select: none;
 }
 input, button, textarea {
   border-radius: 3px;
