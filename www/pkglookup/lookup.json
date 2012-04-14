@@ -132,9 +132,16 @@ else:
                  'url': 'http://braumeister.org' + entry.find('a')['href']}
                 for entry in BS(resp.text).find_all('div', 'formula')[:lim]]
 
+    @fetcher
+    def l_fedora(query):
+        resp = requests.get('https://admin.fedoraproject.org/pkgdb/acls/list/*%s*' % query)
+        return [{'name': entry.string, 'source': 'Fedora',
+                 'url': 'https://admin.fedoraproject.org' + entry['href']}
+                for entry in BS(resp.text).find('div', 'PackageGroup').find_all('a')]
+
     for fn in [l_pypi, l_cpan, l_rubygems, l_npm, l_maven,
                l_clojars, l_github, l_bitbucket, l_ubuntu,
-               l_aur, l_freebsd, l_homebrew]:
+               l_aur, l_freebsd, l_homebrew, l_fedora]:
         Thread(target=fn).start()
         queue.put(query)
 
