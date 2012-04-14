@@ -139,13 +139,17 @@ else:
                  'url': 'https://admin.fedoraproject.org' + entry['href']}
                 for entry in BS(resp.text).find('div', 'PackageGroup').find_all('a')]
 
+    threads = []
     for fn in [l_pypi, l_cpan, l_rubygems, l_npm, l_maven,
                l_clojars, l_github, l_bitbucket, l_ubuntu,
                l_aur, l_freebsd, l_homebrew, l_fedora]:
-        Thread(target=fn).start()
+        t = Thread(target=fn)
+        t.start()
+        threads.append(t)
         queue.put(query)
 
     queue.join()
+    [t.join() for t in threads]
     response.body = json.dumps({'results': results})
     red.set(cachekey, response.body)
     red.expire(cachekey, 60*60*cache_hours)
