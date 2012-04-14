@@ -28,7 +28,10 @@ else:
             global results
             global queue
             query = queue.get()
-            results += fn(query)
+            try:
+                results += fn(query)
+            except:
+                pass
             queue.task_done()
         return inner
 
@@ -43,112 +46,91 @@ else:
     def l_cpan(query):
         resp = requests.get('http://search.cpan.org/search',
                 params={'mode': 'module', 'format': 'xml', 'query': query})
-        if resp.status_code == 200:
-            return [{'name': entry.find('name').string, 'source': 'CPAN',
-                     'url': ''.join(entry.find('link').strings)}
-                    for entry in BS(resp.text, 'html.parser').find_all('module')[:lim]]
-            # html.parser parses <link>http://an.url</link> correctly
-        return []
+        return [{'name': entry.find('name').string, 'source': 'CPAN',
+                 'url': ''.join(entry.find('link').strings)}
+                for entry in BS(resp.text, 'html.parser').find_all('module')[:lim]]
+        # html.parser parses <link>http://an.url</link> correctly
 
     @fetcher
     def l_rubygems(query):
         resp = requests.get('https://rubygems.org/api/v1/search.json',
                 params={'query': query})
-        if resp.status_code == 200:
-            return [{'name': entry['name'], 'source': 'RubyGems',
-                     'url': entry['project_uri']}
-                    for entry in json.loads(resp.text)[:lim]]
-        return []
+        return [{'name': entry['name'], 'source': 'RubyGems',
+                 'url': entry['project_uri']}
+                for entry in json.loads(resp.text)[:lim]]
 
     @fetcher
     def l_npm(query):
         resp = requests.get('http://search.npmjs.org/_list/search/search',
                 params={'startkey': '"%s"' % query,
                         'endkey': '"%sZZZZZZZZZZZZZZZZZZZ"' % query, 'limit': lim})
-        if resp.status_code == 200:
-            return [{'name': entry['key'], 'source': 'npm',
-                     'url': 'http://search.npmjs.org/#/' + entry['key']}
-                    for entry in json.loads(resp.text)['rows']]
-        return []
+        return [{'name': entry['key'], 'source': 'npm',
+                 'url': 'http://search.npmjs.org/#/' + entry['key']}
+                for entry in json.loads(resp.text)['rows']]
 
     @fetcher
     def l_maven(query):
         resp = requests.get('http://search.maven.org/solrsearch/select',
                 params={'wt': 'json', 'rows': lim, 'q': query})
-        if resp.status_code == 200:
-            return [{'name': entry['id'], 'source': 'Maven',
-                     'url': 'http://search.maven.org/#artifactdetails|%s|%s|%s|jar'
-                            % (entry['g'], entry['a'], entry['latestVersion'])}
-                    for entry in json.loads(resp.text)['response']['docs']]
-        return []
+        return [{'name': entry['id'], 'source': 'Maven',
+                 'url': 'http://search.maven.org/#artifactdetails|%s|%s|%s|jar'
+                        % (entry['g'], entry['a'], entry['latestVersion'])}
+                for entry in json.loads(resp.text)['response']['docs']]
 
     @fetcher
     def l_clojars(query):
         resp = requests.get('http://clojars.org/search', params={'q': query})
-        if resp.status_code == 200:
-            return [{'name': entry.find('a').string, 'source': 'Clojars',
-                     'url': 'http://clojars.org/' + entry.find('a').string}
-                    for entry in BS(resp.text).find_all('li', 'search-results')[:lim]]
-        return []
+        return [{'name': entry.find('a').string, 'source': 'Clojars',
+                 'url': 'http://clojars.org/' + entry.find('a').string}
+                for entry in BS(resp.text).find_all('li', 'search-results')[:lim]]
 
     @fetcher
     def l_github(query):
         resp = requests.get('http://github.com/api/v2/json/repos/search/'+query)
-        if resp.status_code == 200:
-            return [{'name': entry['name'], 'source': 'GitHub', 'url': entry['url']}
-                    for entry in json.loads(resp.text)['repositories'][:lim]]
-        return []
+        return [{'name': entry['name'], 'source': 'GitHub', 'url': entry['url']}
+                for entry in json.loads(resp.text)['repositories'][:lim]]
 
     @fetcher
     def l_bitbucket(query):
         resp = requests.get('https://api.bitbucket.org/1.0/repositories/', params={'name': query})
-        if resp.status_code == 200:
-            return [{'name': entry['name'], 'source': 'Bitbucket',
-                     'url': entry['resource_uri'].replace('/api/1.0/repositories', 'https://bitbucket.org')}
-                    for entry in json.loads(resp.text)['repositories'][:lim]]
-        return []
+        return [{'name': entry['name'], 'source': 'Bitbucket',
+                 'url': entry['resource_uri'].replace('/api/1.0/repositories', 'https://bitbucket.org')}
+                for entry in json.loads(resp.text)['repositories'][:lim]]
 
     @fetcher
     def l_ubuntu(query):
         resp = requests.get('http://packages.ubuntu.com/search',
                 params={'suite': last_ubuntu, 'searchon': 'names', 'keywords': query})
-        if resp.status_code == 200:
-            return [{'name': entry.string.replace('Package ', ''), 'source': 'Ubuntu',
-                     'url': 'http://packages.ubuntu.com/%s/%s' % \
-                             (last_ubuntu, entry.string.replace('Package ', ''))}
-                    for entry in BS(resp.text).find('div', id='psearchres').find_all('h3')[:lim]]
-        return []
+        return [{'name': entry.string.replace('Package ', ''), 'source': 'Ubuntu',
+                 'url': 'http://packages.ubuntu.com/%s/%s' % \
+                         (last_ubuntu, entry.string.replace('Package ', ''))}
+                for entry in BS(resp.text).find('div', id='psearchres').find_all('h3')[:lim]]
 
     @fetcher
     def l_aur(query):
         resp = requests.get('https://aur.archlinux.org/rpc.php',
                 params={'type': 'search', 'arg': query})
-        if resp.status_code == 200:
-            return [{'name': entry['Name'], 'source': 'AUR',
-                     'url': 'http://aur.archlinux.org/packages.php?ID=' + entry['ID']}
-                    for entry in json.loads(resp.text)['results'][:lim]]
-        return []
+        return [{'name': entry['Name'], 'source': 'AUR',
+                 'url': 'http://aur.archlinux.org/packages.php?ID=' + entry['ID']}
+                for entry in json.loads(resp.text)['results'][:lim]]
 
     @fetcher
     def l_freebsd(query):
         resp = requests.get('http://www.freebsd.org/cgi/ports.cgi',
                 params={'stype': 'name', 'sektion': 'all', 'query': query})
-        if resp.status_code == 200:
-            acc = []
-            for category in BS(resp.text).find_all('dl'):
-                acc += [{'name': entry.find_all('a')[1].string, 'source': 'FreeBSD',
-                         'url': entry.find_all('a')[1]['href']}
-                         for entry in category.find_all('dt')[:lim]]
-            return acc
-        return []
+        acc = []
+        for category in BS(resp.text).find_all('dl'):
+            acc += [{'name': entry.find_all('a')[1].string, 'source': 'FreeBSD',
+                     'url': entry.find_all('a')[1]['href']}
+                     for entry in category.find_all('dt')[:lim]]
+        return acc
 
     @fetcher
     def l_homebrew(query):
         resp = requests.get('http://braumeister.org/search/'+query)
-        if resp.status_code == 200:
-            return [{'name': entry.find('a').string, 'source': 'Homebrew',
-                     'url': 'http://braumeister.org' + entry.find('a')['href']}
-                    for entry in BS(resp.text).find_all('div', 'formula')[:lim]]
+        return [{'name': entry.find('a').string, 'source': 'Homebrew',
+                 'url': 'http://braumeister.org' + entry.find('a')['href']}
+                for entry in BS(resp.text).find_all('div', 'formula')[:lim]]
 
     for fn in [l_pypi, l_cpan, l_rubygems, l_npm, l_maven,
                l_clojars, l_github, l_bitbucket, l_ubuntu,
