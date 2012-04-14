@@ -1,0 +1,76 @@
+
+
+{% extends "exp.html" %}
+
+{% block title %}Packages lookup{% end %}
+
+{% block content %}
+<p>
+  Looks up packages on PyPI, CPAN, RubyGems, NPM, Maven Central, Clojars,
+  GitHub, Bitbucket, Ubuntu, Arch User Repository, FreeBSD ports and Homebrew.
+</p>
+<p>
+  Results are cached for five hours.
+</p>
+<form id='theform'>
+  <input type='text' id='query'>
+  <button id='go' disabled>Go!</button>
+</form>
+<div id='spintarget'></div>
+<ul id='results'>
+</ul>
+{% end %}
+
+{% block head %}
+<script src='/assets/reqwest.min.js'></script>
+<style>
+  @media screen and (min-width: 700px) {
+    #results { column-count: 2; column-gap: 1em }
+  }
+  @media screen and (min-width: 1200px) {
+    #results { column-count: 3 }
+  }
+  #results { list-style-type: none }
+  #results a { color: inherit }
+  .pypi { color: #c4a000 }
+  .rubygems { color: #a40000 }
+  .freebsd { color: #ef2929 }
+  .maven { color: #3465a4 }
+  .aur { color: #729fcf }
+  .clojars { color: #4e9a06 }
+  .ubuntu { color: #8f5902 }
+  .npm { color: #75507b }
+  .homebrew { color: #ce5c00 }
+  .github, .bitbucket { color: #555753 }
+</style>
+{% end %}
+
+{% block js %}
+  domready(function() {
+    function $() { return document.getElementById.apply(document, arguments) }
+    $('go').disabled = false
+    $('theform').onsubmit = function() {
+      var spinner = FSpinner().spin($('spintarget'))
+      reqwest({
+        url: '/pkglookup/lookup.json', data: {q: $('query').value},
+        type: 'json', method: 'get',
+        error: function(err) {
+          console.log(err)
+          spinner.stop()
+          $('results').innerHTML = '<li>FAIL, see console</li>'
+        },
+        success: function(resp) {
+          var acc = ''
+          resp.results.forEach(function(result) {
+            acc += '<li class='+ result.source.toLowerCase() +'>' +
+              '<a href="'+ result.url +'">'+ result.name +'</a> on '+ result.source +'</li>'
+          })
+          spinner.stop()
+          $('results').innerHTML = acc
+          $('query').value = ''
+        }
+      })
+      return false
+    }
+  })
+{% end %}

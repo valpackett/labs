@@ -35,7 +35,7 @@
 <script>
   function start(user) {
     var graph = document.getElementById('graph')
-    var spinner = new Spinner({color: '#aaa', speed: 1.7, length: 20, lines: 16, radius: 24, width: 7}).spin(graph)
+    var spinner = FSpinner().spin(graph)
     d3.json(user + '.json', function(data) {
       spinner.stop()
       var w = graph.clientWidth, h = 600
