@@ -1,5 +1,5 @@
 PyYAML==3.10
-aspen==0.15.5
+aspen==0.14.4
 beautifulsoup4==4.0.3
 certifi==0.0.8
 chardet==1.0.1
