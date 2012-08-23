@@ -1,0 +1,43 @@
+from config import REDIS as red
+import requests
+import json
+
+cache_hours = 5
+[red.delete(k) for k in red.keys('HUB*')] # Delete cached stuff when reloading the app
+
+username = request.path['user']
+
+cachekey = 'HUB'+username
+cached = red.get(cachekey)
+
+if cached:
+    response.body = cached
+else:
+    repos = []
+
+    def filterfields(repo):
+        return {
+            'full_name': repo['full_name'],
+            'language': repo['language'],
+            'html_url': repo['html_url'],
+            'description': repo['description']
+        }
+
+    def fetch(url):
+        r = requests.get(url)
+        if r.status_code == 200:
+            [repos.append(filterfields(d)) for d in json.loads(r.text)]
+            lnk = r.headers['Link']
+            if lnk:
+                for l in lnk.split(','):
+                    if 'next' in l:
+                        fetch(l.split('>')[0][1:])
+        return r.status_code
+
+    result = fetch('https://api.github.com/users/%s/watched?per_page=100' % username)
+    if result == 200:
+        response.body = json.dumps(repos)
+        red.set(cachekey, response.body)
+        red.expire(cachekey, 60*60*cache_hours)
+    else:
+        response.body = json.dumps({'error': result})

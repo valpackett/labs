@@ -1,0 +1,83 @@
+
+
+{% extends "exp.html" %}
+
+{% block title %}GitHub starred repos filter{% end %}
+
+{% block js %}
+  function render_tab(name) {
+    return '<li><a href="javascript:switchTab(\''+name+'\')">'+name+'</a></li>'
+  }
+  function render_repo(obj) {
+    return '<li><a href="'+obj.html_url+'">'+obj.full_name+'</a> ('+obj.description+')</li>'
+  }
+  function $() { return document.getElementById.apply(document, arguments) }
+  domready(function() {
+    var username = document.getElementById('username')
+    $('go').disabled = false
+    $('theform').onsubmit = function() {
+      var spinner = FSpinner().spin($('spintarget'))
+      reqwest({
+        url: '/starhub/'+username.value+'.json',
+        type: 'json', method: 'get',
+        error: function(err) {
+          console.log(err)
+          spinner.stop()
+          $('results').innerHTML = '<li>FAIL, see console</li>'
+        },
+        success: function(resp) {
+          var tabs = ['All']
+          window.repos = []
+          resp.forEach(function(repo) {
+            if (tabs.indexOf(repo.language) == -1) { tabs.push(repo.language) }
+            repos.push({html_url: repo.html_url, language: repo.language, description: repo.description, full_name: repo.full_name})
+          })
+          var tabs_html = tabs.map(render_tab).join('')
+          var repos_html = repos.map(render_repo).join('')
+          $('results').innerHTML = '<ul id="tabs">'+tabs_html+'</ul><ul id="repos">'+repos_html+'</ul>'
+          window.switchTab = function(lang) {
+            Array.prototype.slice.call($('tabs').querySelectorAll('li')).forEach(function(tab) {
+              tab.className = ''
+              if (tab.firstChild.innerHTML == lang) { tab.className = 'active' }
+            })
+            $('repos').innerHTML = repos.filter(function(repo) {
+              if (lang == "All") return true
+              return repo.language == lang
+            }).map(render_repo).join('')
+          }
+          spinner.stop()
+          username.value = ''
+        }
+      })
+      return false
+    }
+  })
+{% end %}
+
+{% block content %}
+<p>
+  Filter your GitHub starred repos by language.
+  Search with your browser (⌘F).
+  If you have starred a lot of repos, it can take a long time.
+</p>
+<p>
+  Results are cached for five hours.
+</p>
+<form id='theform'>
+  <label for='username'>GitHub username:</label> <input type='text' id='username'>
+  <button id='go' disabled>Go!</button>
+</form>
+<div id='spintarget'></div>
+<div id='results'></div>
+{% end %}
+
+{% block head %}
+<script src='/assets/reqwest.min.js'></script>
+<style>
+  #tabs { list-style-type: none; }
+  #tabs li { float: left; padding: 5px; margin-left: -1px; border: 1px solid #444; border-bottom: none; border-radius: 5px; text-decoration: none; }
+  #repos { clear: both; }
+  .active { background: #3465A4; }
+  .active a { color: white; }
+</style>
+{% end %}
